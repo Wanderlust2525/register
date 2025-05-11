@@ -25,6 +25,16 @@ class CompanyRegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
+        required_fields = ['name', 'phone', 'address', 'industry', 'username', 'password']
+        errors = {}
+
+        for field in required_fields:
+            if field not in request.data or request.data.get(field) in [None, '']:
+                errors[field] = ['Обязательное поле.']
+
+        if errors:
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        
         serializer = CompanyRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         company = serializer.save()
@@ -92,6 +102,20 @@ class WorkerCreateView(APIView):
         permission_classes = [IsAuthenticated]
 
         def post(self, request, *args, **kwargs):
+            required_fields = [
+            'full_name', 'profession', 'phone',
+            'client_duration_minutes', 'work_start', 'work_end',
+            'username', 'password'
+        ]
+
+            errors = {}
+            for field in required_fields:
+                if field not in request.data or request.data.get(field) in [None, '']:
+                    errors[field] = ['Обязательное поле.']
+
+            if errors:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
             serializer = WorkerCreateSerializer(data=request.data, context={'request': request})
             serializer.is_valid(raise_exception=True)
             worker = serializer.save()

@@ -49,7 +49,8 @@ class CompanyLoginSerializer(serializers.Serializer):
 class WorkerCreateSerializer(serializers.ModelSerializer):
     username = serializers.CharField(write_only=True)
     password = serializers.CharField(write_only=True)
-    work_start = serializers.TimeField(required=False)  
+    work_start = serializers.TimeField(required=False) 
+    work_end = serializers.TimeField(required=True) 
 
     class Meta:
         model = Worker
