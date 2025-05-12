@@ -160,6 +160,9 @@ class WorkerFreeSlotsView(RetrieveAPIView):
 class WorkerListView(generics.ListAPIView):
     serializer_class = WorkerSerializer
     permission_classes = [AllowAny]  
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['full_name', 'profession__name'] 
+    ordering_fields = ['full_name', 'id']
 
     def get_queryset(self):
         company_id = self.kwargs['company_id']
