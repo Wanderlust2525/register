@@ -1,4 +1,4 @@
-from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView,RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework import generics
@@ -10,12 +10,12 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from account.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import CompanyListSerializer, CompanyLoginSerializer, IndustrySerializer, ReservationCreateSerializer, WorkerCreateSerializer, WorkerLoginSerializer, WorkerSerializer
+from .serializers import CompanyListSerializer, CompanyLoginSerializer, IndustrySerializer, ProfessionSerializer, ReservationCreateSerializer, WorkerCreateSerializer, WorkerLoginSerializer, WorkerSerializer
 
 
 from rest_framework.exceptions import NotFound
 from api.serializers import CompanyRegisterSerializer
-from onlinereservation.models import Company, Industry, Reservation, Worker
+from onlinereservation.models import Company, Industry, Profession, Reservation, Worker
 
 
 
@@ -173,15 +173,39 @@ class WorkerDetailView(RetrieveAPIView ):
     lookup_field = 'id'  
     lookup_url_kwarg = 'worker_id'
 
+class UpdateDeleteWorkerView(RetrieveUpdateDestroyAPIView):
+    queryset = Worker.objects.all()
+    serializer_class = WorkerSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+    lookup_url_kwarg = 'worker_id'
+
+    def get_queryset(self):
+        # Только директор может редактировать своих сотрудников
+        user = self.request.user
+        if user.role == 'director':
+            return Worker.objects.filter(company__user=user)
+        elif user.role == 'worker':
+            return Worker.objects.filter(user=user)
+        return Worker.objects.none()
 
 
+# class WorkerProfessionsView(APIView):
+#     permission_classes = [AllowAny]
 
-class WorkerProfessionsView(APIView):
+#     def get(self, request, *args, **kwargs):
+#         professions = Worker.objects.values('id', 'profession').distinct()
+#         return Response(professions)
+    
+
+
+class ProfessionListView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request, *args, **kwargs):
-        professions = Worker.objects.values('id', 'profession').distinct()
-        return Response(professions)
+    def get(self, request):
+        queryset = Profession.objects.all()
+        serializer = ProfessionSerializer(queryset, many=True)
+        return Response(serializer.data)
     
 
 class ReservationCreateView(APIView):
@@ -216,7 +240,10 @@ class WorkerReservationListView(APIView):
         serializer = ReservationCreateSerializer(reservations, many=True)
         return Response(serializer.data)
     
-class IndustryListView(generics.ListAPIView):
-    queryset = Industry.objects.all()
-    serializer_class = IndustrySerializer
+class IndustryListView(APIView):
     permission_classes = [AllowAny]
+
+    def get(self, request):
+        industries = Industry.objects.all()
+        serializer = IndustrySerializer(industries, many=True)
+        return Response(serializer.data)

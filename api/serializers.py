@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from onlinereservation.models import Company, Industry, Reservation, Worker
+from onlinereservation.models import Company, Industry, Profession, Reservation, Worker
 
 
 
@@ -112,6 +112,13 @@ class ReservationCreateSerializer(serializers.ModelSerializer):
             ticket_number=ticket_number
         )
         return reservation
+
+
+class ProfessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profession
+        fields = ['id', 'name']
+
     
 class IndustrySerializer(serializers.ModelSerializer):
     class Meta:
