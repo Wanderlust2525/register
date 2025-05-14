@@ -139,7 +139,7 @@ class WorkerLoginView(APIView):
                 'message': 'Успешный вход как сотрудник!',
                 'worker_id': worker_profile.id,
                 'full_name': worker_profile.full_name,
-                'profession': {'name': worker_profile.profession.name}
+                'profession':worker_profile.profession.name
             })
 
         return Response({'error': 'Неверные учетные данные или пользователь не является сотрудником.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -160,13 +160,16 @@ class WorkerFreeSlotsView(RetrieveAPIView):
 class WorkerListView(generics.ListAPIView):
     serializer_class = WorkerSerializer
     permission_classes = [AllowAny]  
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['full_name', 'profession__name'] 
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['profession']  
+
+    search_fields = ['full_name', 'profession__name']
     ordering_fields = ['full_name', 'id']
 
     def get_queryset(self):
         company_id = self.kwargs['company_id']
         return Worker.objects.filter(company_id=company_id)
+
 
 
 class WorkerDetailView(RetrieveAPIView ):
