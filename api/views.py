@@ -139,7 +139,7 @@ class WorkerLoginView(APIView):
                 'message': 'Успешный вход как сотрудник!',
                 'worker_id': worker_profile.id,
                 'full_name': worker_profile.full_name,
-                'profession': worker_profile.profession  
+                'profession': {'name': worker_profile.profession.name}
             })
 
         return Response({'error': 'Неверные учетные данные или пользователь не является сотрудником.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -184,7 +184,6 @@ class UpdateDeleteWorkerView(RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'worker_id'
 
     def get_queryset(self):
-        # Только директор может редактировать своих сотрудников
         user = self.request.user
         if user.role == 'director':
             return Worker.objects.filter(company__user=user)
