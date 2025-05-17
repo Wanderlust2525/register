@@ -11,7 +11,7 @@ from django.contrib.auth import authenticate
 from account.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import CompanyListSerializer, CompanyLoginSerializer, IndustrySerializer, ProfessionSerializer, ReservationCreateSerializer, WorkerCreateSerializer, WorkerLoginSerializer, WorkerSerializer
-
+from datetime import date
 
 from rest_framework.exceptions import NotFound
 from api.serializers import CompanyRegisterSerializer
@@ -236,17 +236,19 @@ class ReservationCreateView(APIView):
 
 class WorkerReservationListView(APIView):
     permission_classes = [AllowAny]
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['data'] 
 
     def get(self, request, worker_id, *args, **kwargs):
+        today = date.today()
+
         if request.user.is_authenticated and request.user.role == 'worker' and request.user.worker_profile.id == worker_id:
-            reservations = Reservation.objects.filter(worker_id=worker_id)
+            reservations = Reservation.objects.filter(worker_id=worker_id, date=today)
         else:
-            reservations = Reservation.objects.filter(worker_id=worker_id).only('date', 'time', 'ticket_number')  
+            reservations = Reservation.objects.filter(worker_id=worker_id, date=today).only('date', 'time', 'ticket_number')
+
         serializer = ReservationCreateSerializer(reservations, many=True)
         return Response(serializer.data)
     
+
 class IndustryListView(APIView):
     permission_classes = [AllowAny]
 
