@@ -237,6 +237,7 @@ class ReservationCreateView(APIView):
 class WorkerReservationListView(APIView):
     permission_classes = [AllowAny]
     filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['data']
 
     def get(self, request, worker_id, *args, **kwargs):
         if request.user.is_authenticated and request.user.role == 'worker' and request.user.worker_profile.id == worker_id:
