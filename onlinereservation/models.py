@@ -78,10 +78,7 @@ class Reservation(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.ticket_number:
-            same_day_reservations = Reservation.objects.filter(
-                worker=self.worker,
-                date=self.date
-            ).count()
-            self.ticket_number = str(same_day_reservations + 1)
-
+            same_day_reservations = Reservation.objects.filter(date=self.date).order_by('ticket_number')
+            next_number = same_day_reservations.count() + 1
+            self.ticket_number = str(next_number) 
         super().save(*args, **kwargs)
